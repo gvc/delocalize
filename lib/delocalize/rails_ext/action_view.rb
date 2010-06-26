@@ -23,9 +23,13 @@ ActionView::Helpers::InstanceTag.class_eval do
           opts.merge!(:precision => 0) if column.type == :integer
 
           hidden_for_integer = field_type == 'hidden' && column.type == :integer
-
+          
+          no_errors = if object.respond_to?(:errors)
+            Rails.version > '2.3.8' ? object.errors[method_name].empty? : !object.errors.invalid?(method_name)
+          end
+          
           # the number will be formatted only if it has no errors
-          if object.respond_to?(:errors) && !object.errors.invalid?(method_name)
+          if no_errors
             # we don't format integer hidden fields because this breaks nested_attributes
             options[:value] = number_with_precision(value, opts) unless hidden_for_integer
           end
